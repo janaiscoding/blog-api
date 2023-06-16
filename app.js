@@ -20,8 +20,7 @@ async function main() {
   await mongoose.connect(mongoDB);
 }
 
-const loginRouter = require("./routes/login");
-const signupRouter = require("./routes/signup");
+const authRouter = require("./routes/authRoutes");
 const postRouter = require("./routes/posts");
 
 const app = express();
@@ -36,8 +35,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
-app.use("/login", loginRouter);
-app.use("/signup", signupRouter);
+app.use("/", authRouter);
 app.use("/posts", postRouter);
 
 // catch 404 and forward to error handler
