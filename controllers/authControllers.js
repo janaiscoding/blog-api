@@ -13,11 +13,29 @@ module.exports.signup_get = (req, res) => {
 module.exports.login_get = (req, res) => {
   res.render("login");
 };
+
 module.exports.signup_post = [
   body("email", "Email is required").trim().isEmail().escape(),
-  body("first_name", "First name is required").trim().isAlphanumeric().escape(),
-  body("last_name", "Last name is required").trim().isAlphanumeric().escape(),
-  body("password", "Password is required, and needs to be between 8 and 24 characters long")
+  body(
+    "first_name",
+    "First name is required and it must be between 2 and 24 characters long"
+  )
+    .trim()
+    .isLength({ min: 2, max: 24 })
+    .isAlphanumeric()
+    .escape(),
+  body(
+    "last_name",
+    "Last name is required and it must be between 2 and 24 characters long"
+  )
+    .trim()
+    .isLength({ min: 2, max: 24 })
+    .isAlphanumeric()
+    .escape(),
+  body(
+    "password",
+    "Password is required, and needs to be between 8 and 24 characters long"
+  )
     .trim()
     .isLength({ min: 8, max: 24 })
     .escape(),
@@ -50,6 +68,8 @@ module.exports.signup_post = [
         } else {
           // everything went well, lets make the user
           await user.save();
+          const allusers = await User.find();
+          console.log(allusers);
           res.redirect("/login");
         }
       }
@@ -57,8 +77,15 @@ module.exports.signup_post = [
   }),
 ];
 
-module.exports.login_post = (req, res) => {
-  const { email, password } = req.body;
-  console.log("email", email, "password", password);
-  res.send("new post request for login form");
-};
+module.exports.login_post = [
+  body("email", "Email is required").trim().isEmail().escape(),
+  body("password", "Password is required")
+    .trim()
+    .isLength({ min: 8, max: 24 })
+    .escape(),
+  asyncHandler(async (req, res, next) => {
+    const { email, password } = req.body;
+    console.log("email", email, "password", password);
+    res.send("new post request for login form");
+  }),
+];
