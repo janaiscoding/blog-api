@@ -55,7 +55,7 @@ module.exports.signup_post = [
           last_name,
           email,
           password: hashedPassword,
-          author_status: true,
+          author_status: false,
         });
         //2. check all the constraints
         if (!errors.isEmpty()) {
@@ -76,7 +76,7 @@ module.exports.signup_post = [
     });
   }),
 ];
-
+//  here i need to do jwt stuff
 module.exports.login_post = [
   body("email", "Email is required").trim().isEmail().escape(),
   body("password", "Password is required")
