@@ -39,23 +39,32 @@ app.get("/success", (req, res) => {
   res.send("this was success");
 });
 app.get("/failure", (req, res) => {
-  console.log(req.body)
+  console.log(req.body);
   res.send("this was failure");
 });
-app.get(
-  "/posts",
-  passport.authenticate(
-    "jwt",
-    {
-      successRedirect: "/success",
-      failureRedirect: "/failure",
-    },
-  ),
-  (req, res) => {
-    console.log("body", req.body);
-    return res.send("protected route");
+const verifyToken = (req, res, next) => {
+  const bearerHeader = req.headers["authorization"];
+  console.log(bearerHeader);
+  if (typeof bearerHeader !== "undefined") {
+    const bearer = bearerHeader.split(" ");
+    const bearerToken = bearer[1];
+    req.token = bearerToken;
+    //yoinked the token from postman header's authorization field - manually added 
+    next();
+  } else {
+    res.json({ message: "not authorized or forbidden" });
   }
-);
+};
+
+app.get("/posts", verifyToken, (req, res) => {
+  jwt.verify(req.token, process.env.secret, (err, authData) => {
+    if (err) {
+      res.sendStatus(403);
+    } else {
+      res.json({ message: "protected route", authData });
+    }
+  });
+});
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

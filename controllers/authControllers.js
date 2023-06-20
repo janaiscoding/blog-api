@@ -86,20 +86,15 @@ module.exports.login_post = [
     .escape(),
   asyncHandler(async (req, res, done) => {
     const { email, password } = req.body;
-    console.log("email", email, "password", password);
-    console.log("finding email in db");
     const user = await User.findOne({ email }).exec();
     if (!user) return res.json({ message: "Email is Incorrect" });
     bcrypt.compare(password, user.password, (err, compare) => {
       if (err) return done(err);
       if (compare) {
+        //auth is successful
         const secret = process.env.secret;
-        const opts = {};
-        // opts.expiresIn = 120;
         const token = jwt.sign({ email }, secret);
-        //ive created my token and im sending it as json in my body
-        return res.status(200).json({
-          message: "Auth passed",
+        return res.json({
           token,
         });
       } else return res.status(401).json({ message: "Wrong password" });
