@@ -5,9 +5,8 @@ const cookieParser = require("cookie-parser");
 const logger = require("morgan");
 const session = require("express-session");
 const passport = require("passport");
-const jwtStrategy = require("passport-jwt").Strategy;
+const jwtStrategy = require("./strategies/jwt");
 const jwt = require("jsonwebtoken");
-passport.use(jwtStrategy);
 
 // DATABASE
 require("dotenv").config();
@@ -20,10 +19,11 @@ async function main() {
 }
 
 const authRouter = require("./routes/authRoutes");
-const postRouter = require("./routes/posts");
+
+// const postRouter = require("./routes/posts");
 
 const app = express();
-
+passport.use(jwtStrategy);
 // view engine setup
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "jade");
@@ -35,7 +35,27 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
 app.use("/", authRouter);
-app.use("/posts", postRouter);
+app.get("/success", (req, res) => {
+  res.send("this was success");
+});
+app.get("/failure", (req, res) => {
+  console.log(req.body)
+  res.send("this was failure");
+});
+app.get(
+  "/posts",
+  passport.authenticate(
+    "jwt",
+    {
+      successRedirect: "/success",
+      failureRedirect: "/failure",
+    },
+  ),
+  (req, res) => {
+    console.log("body", req.body);
+    return res.send("protected route");
+  }
+);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
