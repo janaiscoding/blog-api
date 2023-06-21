@@ -93,7 +93,7 @@ module.exports.login_post = [
       if (compare) {
         //auth is successful
         const secret = process.env.secret;
-        const token = jwt.sign({ email }, secret);
+        const token = jwt.sign({ first_name: user.first_name, last_name: user.last_name, email: user.email }, secret);
         return res.json({
           token,
         });
