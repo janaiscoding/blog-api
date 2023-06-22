@@ -14,10 +14,14 @@ const verifyToken = (req, res, next) => {
     res.json({ message: "not authorized or forbidden" });
   }
 };
-const postsController = require('../controllers/postsController')
+const postsController = require("../controllers/postsController");
 /* GET posts. */
-router.get("/", verifyToken, postsController.posts_get);
+router.get("/", postsController.posts_get);
 
-router.post("/", verifyToken, postsController.posts_post);
+//My Protected Routes
+router.get("/new", verifyToken, postsController.new_post_get);
+router.post("/new", verifyToken, postsController.new_post_post);
 
+router.get("/:id", postsController.singular_post_get);
+router.post("/:id", postsController.singular_post_comment_post);
 module.exports = router;
