@@ -93,9 +93,16 @@ module.exports.login_post = [
       if (compare) {
         //auth is successful
         const secret = process.env.secret;
-        const token = jwt.sign({ first_name: user.first_name, last_name: user.last_name, email: user.email }, secret);
+        const token = jwt.sign(
+          {
+            first_name: user.first_name,
+            last_name: user.last_name,
+            email: user.email,
+            id: user._id,
+          },
+          secret
+        );
         return res.json({
-          user,
           token,
         });
       } else return res.status(401).json({ message: "Wrong password" });

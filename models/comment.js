@@ -4,8 +4,8 @@ const { DateTime } = require("luxon");
 
 const commentSchema = new Schema(
   {
-    text: { type: String, required: true, minLength: 10, maxLength: 300 },
-    author: { type: String, required: true, minLength: 3, maxLength: 24 },
+    comment: { type: String, required: true, minLength: 10, maxLength: 300 },
+    name: { type: String, required: true, minLength: 3, maxLength: 24 },
   },
   { timestamps: true }
 );
