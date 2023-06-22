@@ -22,6 +22,9 @@ router.get("/", postsController.posts_get);
 router.get("/new", verifyToken, postsController.new_post_get);
 router.post("/new", verifyToken, postsController.new_post_post);
 
-router.get("/:id", postsController.singular_post_get);
-router.post("/:id", postsController.singular_post_comment_post);
+router.get("/:id", postsController.singular_post_get); // READ
+router.post("/:id", postsController.singular_post_comment_post); // CREATE
+// router.delete("/:id", postsController.singular_post_delete); // DELETE
+// router.update("/:id", postsController.singular_post_update); // UPDATE
+
 module.exports = router;
