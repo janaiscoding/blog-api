@@ -15,8 +15,8 @@ module.exports.posts_get = asyncHandler(async (req, res) => {
 });
 /* GET NEW /new */
 module.exports.create_get = (req, res) => {
-  jwt.verify(req.token, process.env.secret, (err, authData) => {
-    if (err) {
+  jwt.verify(req.token, process.env.secret, (authErr, authData) => {
+    if (authErr) {
       res.sendStatus(403);
     } else {
       res.json({
@@ -35,12 +35,12 @@ module.exports.create_post = [
   asyncHandler(async (req, res) => {
     const errors = validationResult(req);
     const { title, text } = req.body;
-    jwt.verify(req.token, process.env.secret, async (err, data) => {
-      if (err) {
+    jwt.verify(req.token, process.env.secret, async (authErr, authData) => {
+      if (authErr) {
         res.sendStatus(403);
       } else {
         // JWT connection was verified, Now I am pulling the id from the JWT Token Payload
-        const userId = data.id;
+        const userId = authData.id;
         // Find and retrieve user Info from db, so you can pass the reference of the post author
         const user = await User.findById(userId).exec();
         const post = new Post({
@@ -139,8 +139,8 @@ module.exports.comment_post = [
 /* GET UPDATE '/:id/update' */
 module.exports.update_get = asyncHandler(async (req, res, next) => {
   //protected route
-  jwt.verify(req.token, process.env.secret, async (err, data) => {
-    if (err) {
+  jwt.verify(req.token, process.env.secret, async (authErr, authData) => {
+    if (authErr) {
       res.sendStatus(403);
     } else {
       const err = new Error("Post was not found.");
@@ -169,8 +169,8 @@ module.exports.update_put = [
   asyncHandler(async (req, res) => {
     const errors = validationResult(req);
     const { title, text, published } = req.body;
-    jwt.verify(req.token, process.env.secret, async (err, data) => {
-      if (err) {
+    jwt.verify(req.token, process.env.secret, async (authErr, authData) => {
+      if (authErr) {
         res.sendStatus(403);
       } else {
         const initialPost = await Post.findById(req.params.id).exec();
@@ -207,8 +207,24 @@ module.exports.update_put = [
 ];
 
 /* */
-module.exports.post_delete = asyncHandler(async(req,res)=>{
-  res.json({
-    message: 'DELETE req of one singular post id. - now redirect to normal /posts get post page. | (Is protected)'
-  })
-})
+module.exports.post_delete = asyncHandler(async (req, res, next) => {
+  jwt.verify(req.token, process.env.secret, async (authErr, authData) => {
+    if (authErr) {
+      res.sendStatus(403);
+    }
+    const error = new Error("Post was not found.");
+    error.status = 404;
+    if (req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
+      const post = await Post.findById(req.params.id).exec();
+      if (post === null) {
+        next(error);
+      }
+      await post.deleteOne();
+      res.json({
+        message:
+          "DELETE req of one singular post id. - now redirect to normal /posts get post page. | (Is protected)",
+      });
+    }
+    next(error);
+  });
+});
