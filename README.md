@@ -17,8 +17,8 @@ When thinking about error handling, the first issue that came to my mind was
 
 I've tried checking if the post is strict equal to null, but it didn't work. The error I was getting was `Cast to ObjectId failed for value "1" (type string) at path "_id" for model "Post"`
 
-So I went ahead and checked and found this thread on [stackoverflow](https://stackoverflow.com/questions/14940660/whats-mongoose-error-cast-to-objectid-failed-for-value-xxx-at-path-id) where I can use a Regex pattern to check if my path parameter is indeed a valid object id according to mongoose so I can use the `findById()` method.
+So I went ahead and checked and found this thread on [stack overflow](https://stackoverflow.com/questions/14940660/whats-mongoose-error-cast-to-objectid-failed-for-value-xxx-at-path-id) where I can use a Regex pattern to check if my path parameter is indeed a valid object id according to mongoose so I can use the `findById()` method.
 
-However, I will still have to check if the valid object id returns an existing post or not. For example someone might change just a singular string inside the `_id` and it would still be valid
+However, I will still have to check if the valid object id returns an existing post or not. For example someone might change just a singular string inside the `_id` and it would still be valid. (Important Edge case)
 
 And it worked!!! Yay <3

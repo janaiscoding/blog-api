@@ -71,25 +71,18 @@ module.exports.create_post = [
 /* GET POST /:id */
 module.exports.post_get = asyncHandler(async (req, res, next) => {
   // This will be for the page of each individual post, where people can comment
+  const err = new Error("Post was not found.");
+  err.status = 404;
   if (req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
-    // Yes, it's a valid ObjectId, proceed with `findById` call.
     const post = await Post.findById(req.params.id).exec();
-    if (post === null) {
-      console.log("post wasnt found");
-      const err = new Error("Post was not found");
-      err.status = 404;
-      return next(err);
-    }
-    res.json({
-      message: "GET req of one singular post id. | (Not protected)",
-      post,
-    });
+    post === null
+      ? next(err)
+      : res.json({
+          message: "GET req of one singular post id. | (Not protected)",
+          post,
+        });
   }
-  else {
-    const err = new Error("Post was not found");
-    err.status = 404;
-    return next(err);
-  }
+  next(err);
 });
 
 /* POST COMMENT /:id */
@@ -150,19 +143,18 @@ module.exports.update_get = asyncHandler(async (req, res, next) => {
     if (err) {
       res.sendStatus(403);
     } else {
-      // Verifying token was a success, welcome back! :)
-      // Step 1. Fetch the post we wanna update so we can see what we're dealing with :)
-      const post = await Post.findById(req.params.id).exec();
-      // If we haven't found the id, error handling!
-      if (post === null) {
-        res.sendStatus(404);
-      } else {
-        res.json({
-          message:
-            "GET req for a form where we can UPDATE an existing post's data. | (Protected)",
-          post,
-        });
+      const err = new Error("Post was not found.");
+      err.status = 404;
+      if (req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
+        const post = await Post.findById(req.params.id).exec();
+        post === null
+          ? next(err)
+          : res.json({
+              message: "GET req of one singular post id on the update page. | (Is protected)",
+              post,
+            });
       }
+      next(err);
     }
   });
 });
