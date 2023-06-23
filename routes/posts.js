@@ -24,10 +24,9 @@ router.post("/new", verifyToken, postsController.create_post); // POST new post
 
 router.get("/:id", postsController.post_get); // READ an existing post
 router.post("/:id", postsController.comment_post); // CREATE a new comment on an existing post
-router.delete("/:id", postsController.post_delete); // DELETE an existing post
 
-router.get('/:id/update',verifyToken, postsController.update_get) // UPDATE an existing post - GET (a form)
-router.put('/:id/update', verifyToken, postsController.update_put) // UPDATE an existing post - PUT and complete the update
-
+router.delete("/:id", verifyToken, postsController.post_delete); // DELETE an existing post
+router.get("/:id/update", verifyToken, postsController.update_get); // UPDATE an existing post - GET (a form)
+router.put("/:id/update", verifyToken, postsController.update_put); // UPDATE an existing post - PUT and complete the update
 
 module.exports = router;
