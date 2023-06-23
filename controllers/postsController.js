@@ -29,7 +29,7 @@ module.exports.create_get = (req, res) => {
 };
 /* POST NEW /new */
 module.exports.create_post = [
-  // Validation logic and sanitizing.
+  // Validation logic and sanitizing. - maybe gotta add length stuff
   body("title", "Title is required").trim().escape(),
   body("text", "Text is required").trim().escape(),
   asyncHandler(async (req, res) => {
@@ -52,7 +52,8 @@ module.exports.create_post = [
         if (!errors.isEmpty()) {
           // Found errors, re-render the "form" again with populated and sanitized values, and also error messages
           res.json({
-            message: "Error found while validating fields",
+            message:
+              "Error found while validating post fields - will have to redirect to the new post page with sanitized",
             errors: errors.array(),
           });
           return;
@@ -120,26 +121,25 @@ module.exports.comment_post = [
         errors: errors.array(),
       });
       return;
-    } else {
-      postComments.push(newComment);
-      await newComment.save();
-      await Post.findByIdAndUpdate(req.params.id, {
-        comments: postComments,
-      });
-      const updatedPost = await Post.findById(req.params.id).exec();
-      res.json({
-        message:
-          "POST request on comment on one singular post. | (Not protected)",
-        updatedPost,
-      });
     }
+    postComments.push(newComment);
+    await newComment.save();
+    await Post.findByIdAndUpdate(req.params.id, {
+      comments: postComments,
+    });
+    const updatedPost = await Post.findById(req.params.id).exec();
+    res.json({
+      message:
+        "POST request on comment on one singular post. | (Not protected)",
+      updatedPost,
+    });
   }),
 ];
 
 /* GET UPDATE '/:id/update' */
 module.exports.update_get = asyncHandler(async (req, res, next) => {
   //protected route
-  jwt.verify(req.token, process.env.secret, async (err, authData) => {
+  jwt.verify(req.token, process.env.secret, async (err, data) => {
     if (err) {
       res.sendStatus(403);
     } else {
@@ -147,10 +147,13 @@ module.exports.update_get = asyncHandler(async (req, res, next) => {
       err.status = 404;
       if (req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
         const post = await Post.findById(req.params.id).exec();
+        //also Im pretty sure I will have to "unescape()" the values over here sigh - always a pain but im 100% sure i gotta
         post === null
           ? next(err)
           : res.json({
-              message: "GET req of one singular post id on the update page. | (Is protected)",
+              message:
+                "GET req of one singular post id on the update page. | (Is protected)",
+              info: "Important: This call will be done on a form page, where the fields will be sanitized with the values of the post I just retrieved from the db",
               post,
             });
       }
@@ -159,7 +162,53 @@ module.exports.update_get = asyncHandler(async (req, res, next) => {
   });
 });
 
-/* POST UPDATE '/:id/update' */
-module.exports.update_post = asyncHandler(async (req, res) => {
-  //protected route
-});
+/* PUT UPDATE '/:id/update' */
+module.exports.update_put = [
+  body("title").trim().escape(),
+  body("text").trim().escape(),
+  asyncHandler(async (req, res) => {
+    const errors = validationResult(req);
+    const { title, text, published } = req.body;
+    jwt.verify(req.token, process.env.secret, async (err, data) => {
+      if (err) {
+        res.sendStatus(403);
+      } else {
+        const initialPost = await Post.findById(req.params.id).exec();
+        const userId = data.id;
+        const user = await User.findById(userId).exec();
+        const updatedPost = new Post({
+          _id: req.params.id,
+          title,
+          text,
+          comments: initialPost.comments,
+          author: user,
+          published,
+        });
+        // 1. check for validation errors
+        if (!errors.isEmpty()) {
+          res.json({
+            message:
+              "Error found while validating update post fields - will have to redirect to the update post page with sanitized",
+            errors: errors.array(),
+            updatedPost,
+          });
+          return;
+        }
+        await Post.findByIdAndUpdate(req.params.id, updatedPost);
+        res.json({
+          updatedPost,
+          param: req.params.id,
+          message:
+            "PUT req of one singular post id on the update page was successful - now redirect to normal /:id get post page. | (Is protected)",
+        });
+      }
+    });
+  }),
+];
+
+/* */
+module.exports.post_delete = asyncHandler(async(req,res)=>{
+  res.json({
+    message: 'DELETE req of one singular post id. - now redirect to normal /posts get post page. | (Is protected)'
+  })
+})
