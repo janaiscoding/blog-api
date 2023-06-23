@@ -19,12 +19,12 @@ const postsController = require("../controllers/postsController");
 router.get("/", postsController.posts_get);
 
 //My Protected Routes
-router.get("/new", verifyToken, postsController.new_post_get);
-router.post("/new", verifyToken, postsController.new_post_post);
+router.get("/new", verifyToken, postsController.create_get); // GET new form
+router.post("/new", verifyToken, postsController.create_post); // POST new post
 
-router.get("/:id", postsController.singular_post_get); // READ
-router.post("/:id", postsController.singular_post_comment_post); // CREATE
-// router.delete("/:id", postsController.singular_post_delete); // DELETE
-// router.update("/:id", postsController.singular_post_update); // UPDATE
+router.get("/:id", postsController.post_get); // READ an existing post
+router.post("/:id", postsController.comment_post); // CREATE a new comment on an existing post
+router.get('/:id/update',verifyToken, postsController.update_get) // UPDATE an existing post
+// router.get("/:id", postsController.post_delete); // DELETE an existing post
 
 module.exports = router;

@@ -10,6 +10,7 @@ const userSchema = new Schema({
   author_status: Boolean,
 });
 
+// THIS WAS A MONGOOSE PRE-HOOKS ATTEMPT 
 // userSchema.pre("save", async (next) => {
 //   const user = this;
 //   const hash = await bcrypt.hash(this.password, 10);
