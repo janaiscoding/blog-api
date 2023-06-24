@@ -5,10 +5,14 @@ const { body, validationResult } = require("express-validator");
 
 module.exports.posts_get = asyncHandler(async (req, res) => {
   const posts = await Post.find();
-  res.json({
-    message: "GET request on posts page. | (Not protected route)",
-    posts,
-  });
+  if (posts) {
+    res.json({
+      message: "GET request on posts page. | (Not protected route)",
+      posts,
+    });
+  } else {
+    res.status(404).json({ message: "There are no posts yet" });
+  }
 });
 
 module.exports.create_get = (req, res) => {
@@ -53,7 +57,7 @@ module.exports.create_post = [
 /* GET POST /:id */
 module.exports.post_get = asyncHandler(async (req, res, done) => {
   try {
-    const post = await Post.findById(req.params.id).exec();
+    const post = await Post.findById(req.params.id).populate("comments").exec(); // Only populating here because this is the only request where comments matter to be displayed
     if (post === null) {
       res.status(404).json({ message: "Post was not found" });
     }

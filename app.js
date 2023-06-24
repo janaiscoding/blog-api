@@ -32,9 +32,6 @@ app.use(express.static(path.join(__dirname, "public")));
 const authRouter = require("./routes/authRoutes");
 const postRouter = require("./routes/posts");
 
-app.get("/", passport.authenticate("jwt", { session: false }), (req, res) => {
-  res.send("Protected home route with jwt auth");
-});
 app.use("/auth", authRouter);
 app.use("/posts", postRouter);
 
