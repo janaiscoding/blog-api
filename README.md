@@ -6,9 +6,10 @@ Will write documentation on this project as soon as I finish the client-side too
 
 ### API Endpoints: 
 
-https://janas-blog-api.fly.dev/posts GET
-https://janas-blog-api.fly.dev/posts/new GET/POST (protected)
-https://janas-blog-api.fly.dev/posts/:id GET/POST 
-https://janas-blog-api.fly.dev/posts/:id PUT/DELETE (protected)
-https://janas-blog-api.fly.dev/auth/signup POST requests
-https://janas-blog-api.fly.dev/auth/login POST requests
+| API endpoint                                | Description  | 
+| ------------------------------------------- |------------------------|
+| https://janas-blog-api.fly.dev/posts        | Retrieve all the posts |
+| https://janas-blog-api.fly.dev/posts/new    | Protected route to create a new post      |
+| https://janas-blog-api.fly.dev/posts/:id    | Fetch one singular post (PUT/DELETE as admin to update/delete) |
+| https://janas-blog-api.fly.dev/auth/signup  | Make a POST request to sign up a new user | 
+| https://janas-blog-api.fly.dev/auth/login   | Make a POST request to login up a new user | 
