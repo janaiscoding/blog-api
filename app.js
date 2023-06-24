@@ -5,9 +5,7 @@ const cookieParser = require("cookie-parser");
 const logger = require("morgan");
 const session = require("express-session");
 const passport = require("passport");
-const jwtStrategy = require("./strategies/jwt");
-const jwt = require("jsonwebtoken");
-
+const JwtStrategy = require("./strategies/jwt");
 // DATABASE
 require("dotenv").config();
 const mongoose = require("mongoose");
@@ -22,7 +20,7 @@ const authRouter = require("./routes/authRoutes");
 const postRouter = require("./routes/posts");
 
 const app = express();
-passport.use(jwtStrategy);
+passport.use(JwtStrategy);
 // view engine setup
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "jade");

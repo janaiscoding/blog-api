@@ -39,9 +39,7 @@ module.exports.create_post = [
       if (authErr) {
         res.sendStatus(403);
       } else {
-        // JWT connection was verified, Now I am pulling the id from the JWT Token Payload
         const userId = authData.id;
-        // Find and retrieve user Info from db, so you can pass the reference of the post author
         const user = await User.findById(userId).exec();
         const post = new Post({
           title,
@@ -184,7 +182,6 @@ module.exports.update_put = [
           author: user,
           published,
         });
-        // 1. check for validation errors
         if (!errors.isEmpty()) {
           res.json({
             message:

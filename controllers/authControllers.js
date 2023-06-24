@@ -5,6 +5,7 @@ const User = require("../models/user");
 const asyncHandler = require("express-async-handler");
 const { body, validationResult } = require("express-validator");
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 
 module.exports.signup_get = (req, res) => {
   res.render("signup");
@@ -40,16 +41,12 @@ module.exports.signup_post = [
     .isLength({ min: 8, max: 24 })
     .escape(),
   asyncHandler(async (req, res, next) => {
-    //Find out if the validation constraints return any errors
     const errors = validationResult(req);
     const { first_name, last_name, email, password } = req.body;
     bcrypt.hash(password, 10, async (err, hashedPassword) => {
-      //in case something happens during hashing
       if (err) {
         console.log(err);
       } else {
-        //if hashing is successful
-        //1.make user
         const user = new User({
           first_name,
           last_name,
@@ -57,16 +54,13 @@ module.exports.signup_post = [
           password: hashedPassword,
           author_status: false,
         });
-        //2. check all the constraints
         if (!errors.isEmpty()) {
-          //found errros, let's re-hydrate user's form with old values
           res.render("signup", {
             user,
             errors: errors.array(),
           });
           return;
         } else {
-          // everything went well, lets make the user
           await user.save();
           const allusers = await User.find();
           console.log(allusers);
@@ -76,8 +70,7 @@ module.exports.signup_post = [
     });
   }),
 ];
-const jwt = require("jsonwebtoken");
-//  here i need to do jwt stuff
+
 module.exports.login_post = [
   body("email", "Email is required").trim().isEmail().escape(),
   body("password", "Password is required")
@@ -91,7 +84,6 @@ module.exports.login_post = [
     bcrypt.compare(password, user.password, (err, compare) => {
       if (err) return done(err);
       if (compare) {
-        //auth is successful
         const secret = process.env.secret;
         const token = jwt.sign(
           {
