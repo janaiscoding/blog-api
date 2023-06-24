@@ -1,6 +1,3 @@
-// to create a new user i must: validate and sanitize the user inputed data
-// create an async request to do database - checking if the user already exists
-// hashing the password
 const User = require("../models/user");
 const asyncHandler = require("express-async-handler");
 const { body, validationResult } = require("express-validator");
@@ -78,26 +75,27 @@ module.exports.login_post = [
     .isLength({ min: 8, max: 24 })
     .escape(),
   asyncHandler(async (req, res, done) => {
+    const errors = validationResult(req);
+    if (errors.array().length > 0) {
+      return res.json(errors.array);
+    }
     const { email, password } = req.body;
     const user = await User.findOne({ email }).exec();
-    if (!user) return res.json({ message: "Email is Incorrect" });
+    if (!user)
+      return res.status(404).json({
+        message: "Could not find an account associated with this email",
+      });
+
     bcrypt.compare(password, user.password, (err, compare) => {
       if (err) return done(err);
       if (compare) {
+        const opts = {};
         const secret = process.env.secret;
-        const token = jwt.sign(
-          {
-            first_name: user.first_name,
-            last_name: user.last_name,
-            email: user.email,
-            id: user._id,
-          },
-          secret
-        );
-        return res.json({
-          token,
-        });
-      } else return res.status(401).json({ message: "Wrong password" });
+        opts.expiresIn = "24h";
+        const token = jwt.sign({ email: user.email }, secret, opts);
+        return res.json(token);
+      } else
+        return res.status(401).json({ message: "Your password is incorrect" });
     });
   }),
 ];
