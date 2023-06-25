@@ -2,6 +2,7 @@ const Post = require("../models/post");
 const Comment = require("../models/comment");
 const asyncHandler = require("express-async-handler");
 const { body, validationResult } = require("express-validator");
+const User = require("../models/user");
 
 module.exports.posts_get = asyncHandler(async (req, res) => {
   const posts = await Post.find();
@@ -24,11 +25,19 @@ module.exports.create_get = (req, res) => {
 
 module.exports.create_post = [
   // Validation logic and sanitizing. - maybe gotta add length stuff
-  body("title", "Title is required").trim().escape(),
-  body("text", "Text is required").trim().escape(),
+  body("title", "Title is required and needs to be above 3 characters long")
+    .trim()
+    .isLength({ min: 3 })
+    .escape(),
+  body("text", "Text is required and needs to be above 3 characters long")
+    .trim()
+    .isLength({ min: 3 })
+    .escape(),
+  body("email", "Email is required").trim().isEmail().escape(),
   asyncHandler(async (req, res) => {
+    const { title, text, email } = req.body;
+    const user = await User.findOne({ email });
     const errors = validationResult(req);
-    const { title, text } = req.body;
     const post = new Post({
       title,
       text,
@@ -45,11 +54,13 @@ module.exports.create_post = [
       });
       return;
     } else {
-      await post.save();
-      res.json({
-        message: "POST request successful! | (Protected)",
-        post,
-      });
+      if (user?.admin) {
+        await post.save();
+        res.json({
+          message: "POST request successful! | (Protected)",
+          post,
+        });
+      } else res.sendStatus(403);
     }
   }),
 ];
@@ -142,10 +153,12 @@ module.exports.update_get = asyncHandler(async (req, res, next) => {
 module.exports.update_put = [
   body("title").trim().escape(),
   body("text").trim().escape(),
+  body("email", "Email is required").trim().isEmail().escape(),
   asyncHandler(async (req, res) => {
     const errors = validationResult(req);
-    const { title, text, published } = req.body;
+    const { title, text, published, email } = req.body;
     const initialPost = await Post.findById(req.params.id).exec();
+    const user = await User.findOne({ email });
     const updatedPost = new Post({
       _id: req.params.id,
       title,
@@ -162,26 +175,32 @@ module.exports.update_put = [
       });
       return;
     }
-    await Post.findByIdAndUpdate(req.params.id, updatedPost);
-    res.json({
-      updatedPost,
-      param: req.params.id,
-      message:
-        "PUT req of one singular post id on the update page was successful - now redirect to normal /:id get post page. | (Is protected)",
-    });
+    if (user?.admin) {
+      await Post.findByIdAndUpdate(req.params.id, updatedPost);
+      res.json({
+        updatedPost,
+        param: req.params.id,
+        message:
+          "PUT req of one singular post id on the update page was successful - now redirect to normal /:id get post page. | (Is protected)",
+      });
+    } else res.sendStatus(403);
   }),
 ];
 
 /*DELETE POST BY ID*/
 module.exports.post_delete = asyncHandler(async (req, res, next) => {
-  try {
-    const post = await Post.findById(req.params.id).exec();
-    await post.deleteOne();
-    res.json({
-      message:
-        "DELETE req of one singular post id. - now redirect to normal /posts get post page. | (Is protected)",
-    });
-  } catch (err) {
-    res.status(404).json({ message: "Post was not found", err: err.message });
-  }
+  const { email } = req.body;
+  const user = await User.findOne({ email });
+  if (user?.admin) {
+    try {
+      const post = await Post.findById(req.params.id).exec();
+      await post.deleteOne();
+      res.json({
+        message:
+          "DELETE req of one singular post id. - now redirect to normal /posts get post page. | (Is protected)",
+      });
+    } catch (err) {
+      res.status(404).json({ message: "Post was not found", err: err.message });
+    }
+  } else res.sendStatus(403);
 });

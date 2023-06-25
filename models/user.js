@@ -7,7 +7,7 @@ const userSchema = new Schema({
   last_name: { type: String, required: true, minLength: 2, maxLength: 24 },
   email: { type: String, required: true, unique: true, lowercase: true },
   password: { type: String, required: true, minLength: 8 },
-  author_status: Boolean,
+  admin: Boolean,
 });
 
 module.exports = mongoose.model("User", userSchema);

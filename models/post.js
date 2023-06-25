@@ -4,8 +4,8 @@ const { DateTime } = require("luxon");
 
 const postSchema = new Schema(
   {
-    title: { type: String, required: true },
-    text: { type: String, required: true },
+    title: { type: String, required: true, minLength: 3 },
+    text: { type: String, required: true, minLength: 3 },
     comments: [{ type: Schema.Types.ObjectId, ref: "Comment" }],
     published: Boolean,
   },

@@ -69,7 +69,7 @@ module.exports.login_post = [
   asyncHandler(async (req, res, done) => {
     const errors = validationResult(req);
     if (errors.array().length > 0) {
-      return res.json(errors.array);
+      return res.status(401).json(errors.array);
     }
     const { email, password } = req.body;
     const user = await User.findOne({ email }).exec();
@@ -85,7 +85,7 @@ module.exports.login_post = [
         const secret = process.env.secret;
         opts.expiresIn = "24h";
         const token = jwt.sign({ email: user.email }, secret, opts);
-        return res.json({token});
+        return res.json({ token, email });
       } else
         return res.status(401).json({ message: "Your password is incorrect" });
     });
