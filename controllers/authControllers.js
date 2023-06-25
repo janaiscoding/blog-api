@@ -4,14 +4,6 @@ const { body, validationResult } = require("express-validator");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
-module.exports.signup_get = (req, res) => {
-  res.render("signup");
-};
-
-module.exports.login_get = (req, res) => {
-  res.render("login");
-};
-
 module.exports.signup_post = [
   body("email", "Email is required").trim().isEmail().escape(),
   body(
@@ -93,7 +85,7 @@ module.exports.login_post = [
         const secret = process.env.secret;
         opts.expiresIn = "24h";
         const token = jwt.sign({ email: user.email }, secret, opts);
-        return res.json(token);
+        return res.json({token});
       } else
         return res.status(401).json({ message: "Your password is incorrect" });
     });
