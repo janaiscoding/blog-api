@@ -29,10 +29,10 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
-const authRouter = require("./routes/authRoutes");
-const postRouter = require("./routes/posts");
+const authRouter = require("./routes/authRouter");
+const postRouter = require("./routes/postsRouter");
 
-app.use("/auth", authRouter);
+app.use("/", authRouter);
 app.use("/posts", postRouter);
 
 app.use(function (req, res, next) {
