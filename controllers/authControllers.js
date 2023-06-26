@@ -61,15 +61,15 @@ module.exports.signup_post = [
 ];
 
 module.exports.login_post = [
-  body("email", "Email is required").trim().isEmail().escape(),
-  body("password", "Password is required")
+  body("email", "A valid email is required").trim().isEmail().escape(),
+  body("password", "Password is required and needs to be between 8 and 24 characters long")
     .trim()
     .isLength({ min: 8, max: 24 })
     .escape(),
   asyncHandler(async (req, res, done) => {
     const errors = validationResult(req);
     if (errors.array().length > 0) {
-      return res.status(401).json(errors.array);
+      return res.status(401).json({ errors: errors.array() });
     }
     const { email, password } = req.body;
     const user = await User.findOne({ email }).exec();
