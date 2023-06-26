@@ -21,7 +21,11 @@ router.post(
 
 router.get("/:id", postsController.post_get); // READ an existing post
 router.post("/:id", postsController.comment_post); // CREATE a new comment on an existing post
-
+router.put(
+  "/:id",
+  passport.authenticate("jwt", { session: false }),
+  postsController.update_put
+); // UPDATE an existing post - PUT and complete the update
 router.delete(
   "/:id",
   passport.authenticate("jwt", { session: false }),
@@ -32,10 +36,5 @@ router.get(
   passport.authenticate("jwt", { session: false }),
   postsController.update_get
 ); // UPDATE an existing post - GET (a form)
-router.put(
-  "/:id/update",
-  passport.authenticate("jwt", { session: false }),
-  postsController.update_put
-); // UPDATE an existing post - PUT and complete the update
 
 module.exports = router;

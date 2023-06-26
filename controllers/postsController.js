@@ -33,10 +33,8 @@ module.exports.create_post = [
     .trim()
     .isLength({ min: 3 })
     .escape(),
-  body("email", "Email is required").trim().isEmail().escape(),
   asyncHandler(async (req, res) => {
-    const { title, text, email } = req.body;
-    const user = await User.findOne({ email });
+    const { title, text } = req.body;
     const errors = validationResult(req);
     const post = new Post({
       title,
@@ -54,13 +52,11 @@ module.exports.create_post = [
       });
       return;
     } else {
-      if (user?.admin) {
-        await post.save();
-        res.json({
-          message: "POST request successful! | (Protected)",
-          post,
-        });
-      } else res.sendStatus(403);
+      await post.save();
+      res.json({
+        message: "POST request successful! | (Protected)",
+        post,
+      });
     }
   }),
 ];
@@ -149,16 +145,14 @@ module.exports.update_get = asyncHandler(async (req, res, next) => {
   }
 });
 
-/* PUT UPDATE '/:id/update' */
+/* PUT UPDATE '/:id' */
 module.exports.update_put = [
   body("title").trim().escape(),
   body("text").trim().escape(),
-  body("email", "Email is required").trim().isEmail().escape(),
   asyncHandler(async (req, res) => {
     const errors = validationResult(req);
-    const { title, text, published, email } = req.body;
+    const { title, text, published } = req.body;
     const initialPost = await Post.findById(req.params.id).exec();
-    const user = await User.findOne({ email });
     const updatedPost = new Post({
       _id: req.params.id,
       title,
@@ -175,15 +169,13 @@ module.exports.update_put = [
       });
       return;
     }
-    if (user?.admin) {
-      await Post.findByIdAndUpdate(req.params.id, updatedPost);
-      res.json({
-        updatedPost,
-        param: req.params.id,
-        message:
-          "PUT req of one singular post id on the update page was successful - now redirect to normal /:id get post page. | (Is protected)",
-      });
-    } else res.sendStatus(403);
+    await Post.findByIdAndUpdate(req.params.id, updatedPost);
+    res.json({
+      updatedPost,
+      param: req.params.id,
+      message:
+        "PUT req of one singular post id on the update page was successful - now redirect to normal /:id get post page. | (Is protected)",
+    });
   }),
 ];
 
