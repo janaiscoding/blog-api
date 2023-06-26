@@ -181,18 +181,14 @@ module.exports.update_put = [
 
 /*DELETE POST BY ID*/
 module.exports.post_delete = asyncHandler(async (req, res, next) => {
-  const { email } = req.body;
-  const user = await User.findOne({ email });
-  if (user?.admin) {
-    try {
-      const post = await Post.findById(req.params.id).exec();
-      await post.deleteOne();
-      res.json({
-        message:
-          "DELETE req of one singular post id. - now redirect to normal /posts get post page. | (Is protected)",
-      });
-    } catch (err) {
-      res.status(404).json({ message: "Post was not found", err: err.message });
-    }
-  } else res.sendStatus(403);
+  try {
+    const post = await Post.findById(req.params.id).exec();
+    await post.deleteOne();
+    res.json({
+      message:
+        "DELETE req of one singular post id. - now redirect to normal /posts get post page. | (Is protected)",
+    });
+  } catch (err) {
+    res.status(404).json({ message: "Post was not found", err: err.message });
+  }
 });
