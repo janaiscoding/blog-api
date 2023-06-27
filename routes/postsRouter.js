@@ -4,32 +4,34 @@ const passport = require("passport");
 const jwt = require("jsonwebtoken");
 
 const postsController = require("../controllers/postsController");
-/* GET posts. */
+/* GET - Read all the existing posts. */
 router.get("/", postsController.posts_get);
-//postsController.create_get
-router.get(
-  "/new",
-  passport.authenticate("jwt", { session: false }),
-  postsController.create_get
-);
 
+/* POST - Create a new post. */
 router.post(
   "/new",
   passport.authenticate("jwt", { session: false }),
   postsController.create_post
-); // POST new post
+);
 
-router.get("/:id", postsController.post_get); // READ an existing post
-router.post("/:id", postsController.comment_post); // CREATE a new comment on an existing post
+/* GET - Read existing posts/:id. */
+router.get("/:id", postsController.post_get);
+
+/* POST - Create a new post comment. */
+router.post("/:id", postsController.comment_post);
+
+/* PUT -  Update an existing post. */
 router.put(
   "/:id",
   passport.authenticate("jwt", { session: false }),
   postsController.update_put
-); // UPDATE an existing post - PUT and complete the update
+);
+
+/* DELETE -  Delete an existing post. */
 router.delete(
   "/:id",
   passport.authenticate("jwt", { session: false }),
   postsController.post_delete
-); // DELETE an existing post
+);
 
 module.exports = router;
