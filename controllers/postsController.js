@@ -82,7 +82,7 @@ module.exports.post_get = asyncHandler(async (req, res, done) => {
         text: validator.unescape(post.text),
         comments: post.comments.map((c) => {
           c.comment = validator.unescape(c.comment);
-          c.name = validator.unescape(c.name)
+          c.name = validator.unescape(c.name);
           return c;
         }),
       },
@@ -148,31 +148,13 @@ module.exports.comment_post = [
         comments: updatedPost.comments,
         comments: updatedPost.comments.map((c) => {
           c.comment = validator.unescape(c.comment);
-          c.name = validator.unescape(c.name)
+          c.name = validator.unescape(c.name);
           return c;
         }),
       },
     });
   }),
 ];
-
-/* GET UPDATE '/:id/update' */
-module.exports.update_get = asyncHandler(async (req, res, next) => {
-  try {
-    const post = await Post.findById(req.params.id).exec();
-    if (post === null) {
-      res.status(404).json({ message: "Post was not found" });
-    }
-    res.json({
-      message:
-        "GET req of one singular post id on the UPDATE page. | (Is protected)",
-      info: "Important: This call will be done on a form page, where the fields will be sanitized with the values of the post I just retrieved from the db",
-      post,
-    });
-  } catch (err) {
-    res.status(404).json({ message: "Post was not found", err: err.message });
-  }
-});
 
 /* PUT UPDATE '/:id' */
 module.exports.update_put = [
@@ -188,6 +170,7 @@ module.exports.update_put = [
     const errors = validationResult(req);
     const { title, text, published } = req.body;
     const initialPost = await Post.findById(req.params.id).exec();
+
     const updatedPost = new Post({
       _id: req.params.id,
       title,
@@ -200,13 +183,25 @@ module.exports.update_put = [
         message:
           "Error found while validating update post fields - will have to redirect to the update post page with sanitized",
         errors: errors.array(),
-        updatedPost,
+        updatedPost: {
+          _id: req.params.id,
+          title: validator.unescape(title),
+          text: validator.unescape(text),
+          comments: initialPost.comments,
+          published,
+        },
       });
       return;
     }
     await Post.findByIdAndUpdate(req.params.id, updatedPost);
     res.json({
-      updatedPost,
+      updatedPost: {
+        _id: req.params.id,
+        title: validator.unescape(title),
+        text: validator.unescape(text),
+        comments: initialPost.comments,
+        published,
+      },
       param: req.params.id,
       message:
         "PUT req of one singular post id on the update page was successful - now redirect to normal /:id get post page. | (Is protected)",

@@ -31,10 +31,5 @@ router.delete(
   passport.authenticate("jwt", { session: false }),
   postsController.post_delete
 ); // DELETE an existing post
-router.get(
-  "/:id/update",
-  passport.authenticate("jwt", { session: false }),
-  postsController.update_get
-); // UPDATE an existing post - GET (a form)
 
 module.exports = router;

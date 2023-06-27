@@ -9,7 +9,6 @@ opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
 opts.secretOrKey = process.env.secret;
 
 module.exports = new JwtStrategy(opts, async (payload, done) => {
-  console.log('calling jwt')
   const user = await User.findOne({ email: payload.email });
   if (user) {
     return done(null, user);
