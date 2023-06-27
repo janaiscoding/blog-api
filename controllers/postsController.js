@@ -21,12 +21,7 @@ module.exports.posts_get = asyncHandler(async (req, res) => {
   }
 });
 
-module.exports.create_get = (req, res) => {
-  res.json({
-    message:
-      "GET req for a form where we can get the new post data. | (Protected)",
-  });
-};
+
 
 module.exports.create_post = [
   // Validation logic and sanitizing. - maybe gotta add length stuff
