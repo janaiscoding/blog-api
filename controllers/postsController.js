@@ -2,11 +2,16 @@ const Post = require("../models/post");
 const Comment = require("../models/comment");
 const asyncHandler = require("express-async-handler");
 const { body, validationResult } = require("express-validator");
-const User = require("../models/user");
-
+const validator = require("validator");
 module.exports.posts_get = asyncHandler(async (req, res) => {
   const posts = await Post.find();
+
   if (posts) {
+    //Unescaping all posts - need to do it on comments and singular posts also
+    posts.map((post) => {
+      post.title = validator.unescape(post.title);
+      post.text = validator.unescape(post.text);
+    });
     res.json({
       message: "GET request on posts page. | (Not protected route)",
       posts,
@@ -34,12 +39,12 @@ module.exports.create_post = [
     .isLength({ min: 3 })
     .escape(),
   asyncHandler(async (req, res) => {
-    const { title, text } = req.body;
+    const { title, text, published } = req.body;
     const errors = validationResult(req);
     const post = new Post({
       title,
       text,
-      published: false,
+      published,
     });
     if (!errors.isEmpty()) {
       // Found errors, re-render the "form" again with populated and sanitized values, and also error messages
@@ -69,8 +74,18 @@ module.exports.post_get = asyncHandler(async (req, res, done) => {
       res.status(404).json({ message: "Post was not found" });
     }
     res.json({
-      message: "GET req of one singular post id. | (Not protected)",
-      post,
+      message:
+        "GET req of one singular post id. Populating comments also | (Not protected)",
+      //unescaping
+      post: {
+        title: validator.unescape(post.title),
+        text: validator.unescape(post.text),
+        comments: post.comments.map((c) => {
+          c.comment = validator.unescape(c.comment);
+          c.name = validator.unescape(c.name)
+          return c;
+        }),
+      },
     });
   } catch (err) {
     res.status(404).json({ message: "Post was not found", err: err.message });
@@ -97,10 +112,12 @@ module.exports.comment_post = [
   asyncHandler(async (req, res) => {
     const errors = validationResult(req);
     const { comment, name } = req.body;
-
     const initialPost = await Post.findById(req.params.id);
     const postComments = initialPost.comments;
+
     if (!errors.isEmpty()) {
+      comment = validator.unescape(comment);
+      name = validator.unescape(name);
       res.json({
         message: "Error found while validating comment fields",
         errors: errors.array(),
@@ -118,11 +135,23 @@ module.exports.comment_post = [
     await Post.findByIdAndUpdate(req.params.id, {
       comments: postComments,
     });
-    const updatedPost = await Post.findById(req.params.id).exec();
+    const updatedPost = await Post.findById(req.params.id)
+      .populate("comments")
+      .exec();
+
     res.json({
       message:
         "POST request on comment on one singular post. | (Not protected)",
-      updatedPost,
+      updatedPost: {
+        title: validator.unescape(updatedPost.title),
+        text: validator.unescape(updatedPost.text),
+        comments: updatedPost.comments,
+        comments: updatedPost.comments.map((c) => {
+          c.comment = validator.unescape(c.comment);
+          c.name = validator.unescape(c.name)
+          return c;
+        }),
+      },
     });
   }),
 ];
@@ -147,8 +176,14 @@ module.exports.update_get = asyncHandler(async (req, res, next) => {
 
 /* PUT UPDATE '/:id' */
 module.exports.update_put = [
-  body("title").trim().escape(),
-  body("text").trim().escape(),
+  body("title", "Title is required and needs to be above 3 characters long")
+    .trim()
+    .isLength({ min: 3 })
+    .escape(),
+  body("text", "Text is required and needs to be above 3 characters long")
+    .trim()
+    .isLength({ min: 3 })
+    .escape(),
   asyncHandler(async (req, res) => {
     const errors = validationResult(req);
     const { title, text, published } = req.body;
