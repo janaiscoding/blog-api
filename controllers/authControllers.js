@@ -44,8 +44,7 @@ module.exports.signup_post = [
           author_status: false,
         });
         if (!errors.isEmpty()) {
-          res.render("signup", {
-            user,
+          res.json({
             errors: errors.array(),
           });
           return;
