@@ -3,9 +3,9 @@ const Comment = require("../models/comment");
 const asyncHandler = require("express-async-handler");
 const { body, validationResult } = require("express-validator");
 const validator = require("validator");
+
 module.exports.posts_get = asyncHandler(async (req, res) => {
   const posts = await Post.find();
-
   if (posts) {
     //Unescaping all posts - need to do it on comments and singular posts also
     posts.map((post) => {
@@ -21,10 +21,7 @@ module.exports.posts_get = asyncHandler(async (req, res) => {
   }
 });
 
-
-
 module.exports.create_post = [
-  // Validation logic and sanitizing. - maybe gotta add length stuff
   body("title", "Title is required and needs to be above 3 characters long")
     .trim()
     .isLength({ min: 3 })
@@ -42,7 +39,6 @@ module.exports.create_post = [
       published,
     });
     if (!errors.isEmpty()) {
-      // Found errors, re-render the "form" again with populated and sanitized values, and also error messages
       res.json({
         title,
         text,
@@ -64,23 +60,23 @@ module.exports.create_post = [
 /* GET POST /:id */
 module.exports.post_get = asyncHandler(async (req, res, done) => {
   try {
-    const post = await Post.findById(req.params.id).populate("comments").exec(); // Only populating here because this is the only request where comments matter to be displayed
+    const post = await Post.findById(req.params.id).populate("comments").exec(); 
+    // Only populating here because this is the only request where comments matter to be displayed
     if (post === null) {
       res.status(404).json({ message: "Post was not found" });
     }
+    post.title = validator.unescape(post.title);
+    post.text = validator.unescape(post.text),
+    post.comments = post.comments.map((c) => {
+      c.comment = validator.unescape(c.comment);
+      c.name = validator.unescape(c.name);
+      return c; // finished formatting back to normal, returning the full comments (they're a schema model)
+    }),
     res.json({
       message:
         "GET req of one singular post id. Populating comments also | (Not protected)",
-      //unescaping
-      post: {
-        title: validator.unescape(post.title),
-        text: validator.unescape(post.text),
-        comments: post.comments.map((c) => {
-          c.comment = validator.unescape(c.comment);
-          c.name = validator.unescape(c.name);
-          return c;
-        }),
-      },
+      // Unescaping everything to be displayed properly on the frontend
+      post
     });
   } catch (err) {
     res.status(404).json({ message: "Post was not found", err: err.message });
@@ -89,7 +85,6 @@ module.exports.post_get = asyncHandler(async (req, res, done) => {
 
 /* POST COMMENT /:id */
 module.exports.comment_post = [
-  // Validation logic and sanitizing
   body(
     "comment",
     "Comment field is required, and must be between 10 and 300 characters long"
@@ -99,25 +94,22 @@ module.exports.comment_post = [
     .escape(),
   body(
     "name",
-    "Name field is required, and must be between 3 and 24 characters long"
+    "Name field is required, and must be between 2 and 24 characters long"
   )
     .trim()
-    .isLength({ min: 3, max: 24 })
+    .isLength({ min: 2, max: 24 })
     .escape(),
   asyncHandler(async (req, res) => {
     const errors = validationResult(req);
     const { comment, name } = req.body;
     const initialPost = await Post.findById(req.params.id);
     const postComments = initialPost.comments;
-
     if (!errors.isEmpty()) {
-      comment = validator.unescape(comment);
-      name = validator.unescape(name);
       res.json({
-        message: "Error found while validating comment fields",
+        message: "Error found while validating comment fields | Error.",
         errors: errors.array(),
-        comment,
-        name,
+        comment: validator.unescape(comment),
+        name: validator.unescape(name),
       });
       return;
     }
@@ -129,24 +121,11 @@ module.exports.comment_post = [
     await newComment.save();
     await Post.findByIdAndUpdate(req.params.id, {
       comments: postComments,
-    });
-    const updatedPost = await Post.findById(req.params.id)
-      .populate("comments")
-      .exec();
-
+    }); 
+    // I added the new comment, afterwards I should just refresh so the post gets displayed correctly
     res.json({
       message:
-        "POST request on comment on one singular post. | (Not protected)",
-      updatedPost: {
-        title: validator.unescape(updatedPost.title),
-        text: validator.unescape(updatedPost.text),
-        comments: updatedPost.comments,
-        comments: updatedPost.comments.map((c) => {
-          c.comment = validator.unescape(c.comment);
-          c.name = validator.unescape(c.name);
-          return c;
-        }),
-      },
+        "POST request on comment on one singular post | (Not protected) | Successful.",
     });
   }),
 ];
@@ -170,9 +149,9 @@ module.exports.update_put = [
       _id: req.params.id,
       title,
       text,
-      comments: initialPost.comments,
+      comments: initialPost.comments, // Need this so comments don't get overwritten
       published,
-    });
+    }); 
     if (!errors.isEmpty()) {
       res.json({
         message:
@@ -190,16 +169,9 @@ module.exports.update_put = [
     }
     await Post.findByIdAndUpdate(req.params.id, updatedPost);
     res.json({
-      updatedPost: {
-        _id: req.params.id,
-        title: validator.unescape(title),
-        text: validator.unescape(text),
-        comments: initialPost.comments,
-        published,
-      },
       param: req.params.id,
       message:
-        "PUT req of one singular post id on the update page was successful - now redirect to normal /:id get post page. | (Is protected)",
+        "PUT req of one singular post id on the update page | (Is protected) | Successful.",
     });
   }),
 ];

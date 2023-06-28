@@ -51,11 +51,9 @@ module.exports.signup_post = [
           return;
         } else {
           await user.save();
-          const allusers = await User.find();
-          console.log(allusers);
-          res.redirect("/login");
-        }
+          res.json({user})
       }
+    }
     });
   }),
 ];
@@ -67,11 +65,11 @@ module.exports.login_post = [
     .isLength({ min: 8, max: 24 })
     .escape(),
   asyncHandler(async (req, res, done) => {
+    const { email, password } = req.body;
     const errors = validationResult(req);
     if (errors.array().length > 0) {
-      return res.status(401).json({ errors: errors.array() });
+      return res.status(401).json({ errors: errors.array() }); //validation errors
     }
-    const { email, password } = req.body;
     const user = await User.findOne({ email }).exec();
     if (!user)
       return res.status(404).json({
@@ -79,13 +77,13 @@ module.exports.login_post = [
       });
 
     bcrypt.compare(password, user.password, (err, compare) => {
-      if (err) return done(err);
+      if (err) return done(err); 
       if (compare) {
         const opts = {};
         const secret = process.env.secret;
-        opts.expiresIn = "24h";
+        opts.expiresIn = "1hr";
         const token = jwt.sign({ email: user.email }, secret, opts);
-        return res.json({ token, email });
+        return res.json({ token, user });
       } else
         return res.status(401).json({ message: "Your password is incorrect" });
     });
