@@ -96,10 +96,10 @@ module.exports.comment_post = [
     .escape(),
   body(
     "name",
-    "Name field is required, and must be between 2 and 24 characters long"
+    "Name field is required, and must be at least 2 characters long"
   )
     .trim()
-    .isLength({ min: 2, max: 24 })
+    .isLength({ min: 2 })
     .escape(),
   asyncHandler(async (req, res) => {
     const errors = validationResult(req);
