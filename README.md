@@ -2,7 +2,7 @@
 
 Using Postman to simulate requests.
 
-Will write documentation on this project as soon as I finish the client-side too.
+Will write documentation on this project as soon as I finish the client-side and CMS too.
 
 ### API Endpoints: 
 
@@ -13,3 +13,14 @@ Will write documentation on this project as soon as I finish the client-side too
 | https://janas-blog-api.fly.dev/posts/:id    | Fetch one singular post (PUT/DELETE as admin to update/delete) |
 | https://janas-blog-api.fly.dev/signup       | Make a POST request to sign up a new user | 
 | https://janas-blog-api.fly.dev/login        | Make a POST request to login up a new user | 
+
+
+### Installation and running 
+
+```
+git clone git@github.com:janaiscoding/blog-api.git
+cd blog-api
+npm install
+npm run serverstart
+Server is listening on localhost:3000
+```

@@ -60,24 +60,26 @@ module.exports.create_post = [
 /* GET POST /:id */
 module.exports.post_get = asyncHandler(async (req, res, done) => {
   try {
-    const post = await Post.findById(req.params.id).populate("comments").exec(); 
+    const post = await Post.findById(req.params.id)
+      .populate({ path: "comments", options: { sort: { createdAt: 'desc' } } })
+      .exec();
     // Only populating here because this is the only request where comments matter to be displayed
     if (post === null) {
       res.status(404).json({ message: "Post was not found" });
     }
     post.title = validator.unescape(post.title);
-    post.text = validator.unescape(post.text),
-    post.comments = post.comments.map((c) => {
-      c.comment = validator.unescape(c.comment);
-      c.name = validator.unescape(c.name);
-      return c; // finished formatting back to normal, returning the full comments (they're a schema model)
-    }),
-    res.json({
-      message:
-        "GET req of one singular post id. Populating comments also | (Not protected)",
-      // Unescaping everything to be displayed properly on the frontend
-      post
-    });
+    (post.text = validator.unescape(post.text)),
+      (post.comments = post.comments.map((c) => {
+        c.comment = validator.unescape(c.comment);
+        c.name = validator.unescape(c.name);
+        return c; // finished formatting back to normal, returning the full comments (they're a schema model)
+      })),
+      res.json({
+        message:
+          "GET req of one singular post id. Populating comments also | (Not protected)",
+        // Unescaping everything to be displayed properly on the frontend
+        post,
+      });
   } catch (err) {
     res.status(404).json({ message: "Post was not found", err: err.message });
   }
@@ -121,7 +123,7 @@ module.exports.comment_post = [
     await newComment.save();
     await Post.findByIdAndUpdate(req.params.id, {
       comments: postComments,
-    }); 
+    });
     // I added the new comment, afterwards I should just refresh so the post gets displayed correctly
     res.json({
       message:
@@ -151,7 +153,7 @@ module.exports.update_put = [
       text,
       comments: initialPost.comments, // Need this so comments don't get overwritten
       published,
-    }); 
+    });
     if (!errors.isEmpty()) {
       res.json({
         message:
