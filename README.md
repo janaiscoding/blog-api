@@ -1,8 +1,6 @@
 ### BLOG API
 
-Using Postman to simulate requests.
-
-Will write documentation on this project as soon as I finish the client-side and CMS too.
+[Live Blog](https://blog-client-smoky.vercel.app/) | [Blog Repo](https://github.com/janaiscoding/blog-client/tree/main) | [CMS Repo](https://github.com/janaiscoding/blog-cms/tree/main)
 
 ### API Endpoints:
 
@@ -25,3 +23,19 @@ npm install
 npm run serverstart
 Server is listening on localhost:3000
 ```
+
+# Built with
+
+## Technologies 
+
+- Express.js (Node.js)
+- Mongoose (MongoDB)
+- JavaScript
+
+## Tools Used
+
+- Postman
+- Visual Studio Code
+- npm package manager
+- Linux Terminal
+- Git and Github
