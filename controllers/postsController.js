@@ -5,7 +5,7 @@ const { body, validationResult } = require("express-validator");
 const validator = require("validator");
 
 module.exports.posts_get = asyncHandler(async (req, res) => {
-  const posts = await Post.find();
+  const posts = await Post.find().populate("comments");
   if (posts) {
     //Unescaping all posts - need to do it on comments and singular posts also
     posts.map((post) => {
