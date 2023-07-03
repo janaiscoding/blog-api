@@ -61,7 +61,7 @@ module.exports.create_post = [
 module.exports.post_get = asyncHandler(async (req, res, done) => {
   try {
     const post = await Post.findById(req.params.id)
-      .populate({ path: "comments", options: { sort: { createdAt: 'desc' } } })
+      .populate({ path: "comments", options: { sort: { createdAt: "desc" } } })
       .exec();
     // Only populating here because this is the only request where comments matter to be displayed
     if (post === null) {
@@ -94,10 +94,7 @@ module.exports.comment_post = [
     .trim()
     .isLength({ min: 10, max: 300 })
     .escape(),
-  body(
-    "name",
-    "Name field is required, and must be at least 2 characters long"
-  )
+  body("name", "Name field is required, and must be at least 2 characters long")
     .trim()
     .isLength({ min: 2 })
     .escape(),
@@ -191,3 +188,56 @@ module.exports.post_delete = asyncHandler(async (req, res, next) => {
     res.status(404).json({ message: "Post was not found", err: err.message });
   }
 });
+
+module.exports.comment_delete = asyncHandler(async (req, res, next) => {
+  try {
+    const comment = await Comment.findById(req.params.commentID).exec();
+    await comment.deleteOne();
+    // It's enough to delete the comment because the mongoose ref will update the post as well! Very very nice and ez stuff
+    res.json({
+      message:
+        "DELETE request one singular comment | (Protected) | Successful.",
+    });
+  } catch (err) {
+    res
+      .status(404)
+      .json({ message: "Comment was not found", err: err.message });
+  }
+});
+
+module.exports.comment_update = [
+  body(
+    "comment",
+    "Comment field is required, and must be between 10 and 300 characters long"
+  )
+    .trim()
+    .isLength({ min: 10, max: 300 })
+    .escape(),
+  body("name", "Name field is required, and must be at least 2 characters long")
+    .trim()
+    .isLength({ min: 2 })
+    .escape(),
+  asyncHandler(async (req, res, next) => {
+    const errors = validationResult(req);
+    const { comment, name } = req.body;
+    if (!errors.isEmpty()) {
+      res.json({
+        message: "Error found while validating comment fields | Error.",
+        errors: errors.array(),
+        comment: validator.unescape(comment),
+        name: validator.unescape(name),
+      });
+      return;
+    }
+    const newComment = new Comment({
+      _id: req.params.commentID,
+      comment,
+      name,
+    });
+    await Comment.findByIdAndUpdate(req.params.commentID, newComment);
+    res.json({
+      message:
+        "PUT request on comment on one singular post | (Protected) | Successful.",
+    });
+  }),
+];

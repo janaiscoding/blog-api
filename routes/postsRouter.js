@@ -34,4 +34,15 @@ router.delete(
   postsController.post_delete
 );
 
+router.delete(
+  "/:id/:commentID",
+  passport.authenticate("jwt", { session: false }),
+  postsController.comment_delete
+);
+router.put(
+  "/:id/:commentID",
+  passport.authenticate("jwt", { session: false }),
+  postsController.comment_update
+);
+
 module.exports = router;
