@@ -1,6 +1,6 @@
 ### BLOG API
 
-[Live Blog](https://blog-client-smoky.vercel.app/) | [Blog Repo](https://github.com/janaiscoding/blog-client/tree/main) | [CMS Repo](https://github.com/janaiscoding/blog-cms/tree/main)
+[Live Blog](https://janaiscoding-blog.vercel.app/) | [Blog Repo](https://github.com/janaiscoding/blog-client/tree/main) | [CMS Repo](https://github.com/janaiscoding/blog-cms/tree/main)
 
 ### API Endpoints:
 
