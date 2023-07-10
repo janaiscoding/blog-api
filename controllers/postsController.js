@@ -5,7 +5,9 @@ const { body, validationResult } = require("express-validator");
 const validator = require("validator");
 
 module.exports.posts_get = asyncHandler(async (req, res) => {
-  const posts = await Post.find().populate("comments").sort({createdAt: 'desc'});
+  const posts = await Post.find()
+    .populate("comments")
+    .sort({ createdAt: "desc" });
   if (posts) {
     //Unescaping all posts - need to do it on comments and singular posts also
     posts.map((post) => {
@@ -94,9 +96,9 @@ module.exports.comment_post = [
     .trim()
     .isLength({ min: 10, max: 300 })
     .escape(),
-  body("name", "Name field is required, and must be at least 2 characters long")
+  body("name", "Name field is required, and must be between 2 and 24 characters long")
     .trim()
-    .isLength({ min: 2 })
+    .isLength({ min: 2, max: 24 })
     .escape(),
   asyncHandler(async (req, res) => {
     const errors = validationResult(req);
